@@ -1,7 +1,15 @@
 # J'essaie de créer et applique l'opérateur évolution !
 
-from qutip import *
+from qutip import * #analysis:ignore
 import numpy as np
+import matplotlib.pyplot as plt
+### Fonctions à réutiliser
+
+def idqbit(N):      #Crée matrice identité compatible format tenseurs
+    l = []
+    for i in range (N):
+        l.append(identity(2))
+    return(tensor(l))
 
 N=10 # Nombre de spin auxiliaires
 a=1
@@ -41,5 +49,28 @@ Nt = 50000
 
 ## Opérateur évolution de dt 
 
-U = identity(psi.shape[0]) - 1j*dt*H
+U = idqbit(N+1) - 1j*dt*H
+print(np.trace(U)/psi.shape[0])      ## Important de regarder la trace pour 
+                                    ## check l'unitarité
+
+lp = [psi.ptrace(0)[0][0][0]]    
+lm = [psi.ptrace(0)[1][0][1]]
+lpa = [psi.ptrace(5)[0][0][0]]    
+lma = [psi.ptrace(5)[1][0][1]]     
+
+for i in range (Nt) :
+    psi = U*psi
+    lp.append(psi.ptrace(0)[0][0][0])   
+    lm.append(psi.ptrace(0)[1][0][1])
+    lpa.append(psi.ptrace(5)[0][0][0])
+    lma.append(psi.ptrace(5)[1][0][1])
+
+lt = np.linspace(0,(Nt+1)*dt,Nt+1)
+plt.plot(lt,lp,label = "plus")
+plt.plot(lt,lm,label = "moins")
+plt.plot(lt,lpa,label = "plus aux")
+plt.plot(lt,lma,label = "moins aux")
+plt.grid()
+plt.legend()
+
 
