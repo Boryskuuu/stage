@@ -25,7 +25,7 @@ H=tensor(la)
 
 for i in range (N) :
     ls = [identity(2)]
-    li = [(g/N)*sigmax()]
+    li = [g*sigmax()]
     for j in range (N):
         if i==j :
             ls.append(b*sigmaz())
@@ -49,9 +49,7 @@ Nt = 50000
 
 ## Opérateur évolution de dt 
 
-U = idqbit(N+1) - 1j*dt*H
-print(np.trace(U)/psi.shape[0])      ## Important de regarder la trace pour 
-                                    ## check l'unitarité
+U=(-1j*H*dt).expm()   #commande de base de Qutip !
 
 lp = [psi.ptrace(0)[0][0][0]]    
 lm = [psi.ptrace(0)[1][0][1]]
