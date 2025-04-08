@@ -27,12 +27,12 @@ def Hdrift(N):  # Hamiltonien qui amène vers la droite
 
 def timeevol(phi,rc,gamma,x,dt,dx,N,H):
     schro = -1j*dt*np.matmul(H,phi)
-    # dens = density(rc,phi,x,x)
-    # dW = np.sqrt(dt) * np.random.normal(0, 1, size=N)
-    # wiener = dens * dW * phi 
-    # deterministic = - 0.5 * gamma * dens**2 * dt * phi
-    # # update + renormalize
-    # phi += wiener + deterministic + schro
+    dens = density(rc,phi,x,x)
+    dW = np.sqrt(dt) * np.random.normal(0, 1, size=N)
+    wiener = dens * dW * phi 
+    deterministic = - 0.5 * gamma * dens**2 * dt * phi
+    # update + renormalize
+    phi += wiener + deterministic + schro
     phi += schro
     phi /= np.sqrt(np.sum(np.abs(phi)**2) * dx)
     return(phi)
@@ -64,7 +64,7 @@ def runvariance(sigma,center,a,x,dx,Nt,N,dt):
     
 def runsingle(sigma,center,a,x,dx,Nt,N,dt):
     phi = doublegauss(sigma,center,a,x,dx).astype(complex)
-    H = Hdrift(N)
+    H = np.zeros((N,N))
     for i in range(Nt) :
         phi=timeevol(phi,rc,gamma,x,dt,dx,N,H)
         if i%50 == 0 :
