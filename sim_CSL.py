@@ -9,14 +9,31 @@ def density(rc,phi,x,y) :
     gaussians = gauss(rc, x[:,np.newaxis], np.abs(phi) ** 2 / (rc*np.sqrt(2 * np.pi)), y)
     return np.sum(gaussians,axis=0)
 
-def timeevol(phi,rc,gamma,x,dt,dx,N):
-    #schro = -1j*H*dt*phi
-    dens = density(rc,phi,x,x)
-    dW = np.sqrt(dt) * np.random.normal(0, 1, size=N)
-    wiener = dens * dW * phi 
-    deterministic = - 0.5 * gamma * dens**2 * dt * phi
-    # update + renormalize
-    phi += wiener + deterministic
+def Hcentre(N):     # Hamiltonien qui amène vers le centre
+    H = np.zeros((N,N))
+    for i in range (round(N/2)):
+        H[i][i+1] = 1
+    for i in range(round(N/2),N):
+        H[i][i-1] = 1
+    return(H)
+
+def Hdrift(N):  # Hamiltonien qui amène vers la droite
+    H = np.zeros((N,N))
+    for i in range (N-1) :
+        H[i][i+1] = 1
+    H[N-1][N-1] = 1
+    return(H)
+        
+
+def timeevol(phi,rc,gamma,x,dt,dx,N,H):
+    schro = -1j*dt*np.matmul(H,phi)
+    # dens = density(rc,phi,x,x)
+    # dW = np.sqrt(dt) * np.random.normal(0, 1, size=N)
+    # wiener = dens * dW * phi 
+    # deterministic = - 0.5 * gamma * dens**2 * dt * phi
+    # # update + renormalize
+    # phi += wiener + deterministic + schro
+    phi += schro
     phi /= np.sqrt(np.sum(np.abs(phi)**2) * dx)
     return(phi)
             
@@ -46,9 +63,10 @@ def runvariance(sigma,center,a,x,dx,Nt,N,dt):
     
     
 def runsingle(sigma,center,a,x,dx,Nt,N,dt):
-    phi = doublegauss(sigma,center,a,x,dx) 
+    phi = doublegauss(sigma,center,a,x,dx).astype(complex)
+    H = Hdrift(N)
     for i in range(Nt) :
-        phi=timeevol(phi,rc,gamma,x,dt,dx,N)
+        phi=timeevol(phi,rc,gamma,x,dt,dx,N,H)
         if i%50 == 0 :
             plt.plot(x, np.abs(phi) ** 2, label=f"t={i*dt:.3f}")            
     # Plot densité de proba 
